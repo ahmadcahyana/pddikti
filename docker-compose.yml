@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+  feeder_1:
+    build: .
+    container_name: feeder_1
+    restart: always
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - ./prefill/feeder_1:/home/prefill
+      - feeder_1_pgdata:/var/lib/postgresql/data
+    environment:
+      VIRTUAL_HOST: dikti1.ac.id
+      
+  feeder_2:
+    build: .
+    container_name: feeder_2
+    restart: always
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - ./prefill/feeder_2:/home/prefill
+      - feeder_2_pgdata:/var/lib/postgresql/data
+    environment:
+      VIRTUAL_HOST: dikti2.ac.id
+
+volumes:
+  feeder_1_pgdata:
+  feeder_2_pgdata:
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
